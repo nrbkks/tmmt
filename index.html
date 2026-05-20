@@ -50,6 +50,7 @@
             body { background: white; }
             .glass-panel { box-shadow: none; }
             .no-print { display: none; }
+            .print-hidden { display: none !important; }
         }
     </style>
 </head>
@@ -220,11 +221,11 @@
                     </section>
                 </div>
 
-                <!-- CTA -->
+                <!-- CTA Button -->
                 <div class="text-center mt-10">
-                    <a href="https://forms.gle/2WBks2U9RQaBYc1R9" target="_blank" class="inline-block bg-brand-orange text-white text-xl font-bold py-4 px-10 rounded-full shadow-[0_10px_20px_rgba(255,138,91,0.3)] hover:bg-orange-500 hover:shadow-[0_15px_25px_rgba(255,138,91,0.4)] transform hover:-translate-y-1 transition-all duration-300">
+                    <button onclick="openVerification()" class="inline-block bg-brand-orange text-white text-xl font-bold py-4 px-10 rounded-full shadow-[0_10px_20px_rgba(255,138,91,0.3)] hover:bg-orange-500 hover:shadow-[0_15px_25px_rgba(255,138,91,0.4)] transform hover:-translate-y-1 transition-all duration-300 print-hidden cursor-pointer">
                         <i class="fas fa-paw mr-2"></i> Jelentkezem a táborba!
-                    </a>
+                    </button>
                 </div>
 
             </main>
@@ -234,5 +235,72 @@
             </footer>
         </div>
     </div>
+
+    <!-- Security Verification Modal -->
+    <div id="captchaModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300 px-4 print-hidden">
+        <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl border-4 border-brand-yellow transform scale-95 transition-transform duration-300">
+            <div class="w-16 h-16 bg-brand-yellow/30 text-brand-orange rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-shield-dog"></i>
+            </div>
+            <h3 class="text-2xl font-extrabold text-brand-dark mb-2">Mancsos Ellenőrzés</h3>
+            <p class="text-gray-500 text-sm mb-6">Kérjük igazold, hogy nem vagy robot, mielőtt megnyitjuk a jelentkezési lapot!</p>
+            
+            <p class="font-bold text-lg text-brand-green mb-4">Hány lába van egy kutyusnak?</p>
+            
+            <div class="grid grid-cols-3 gap-3">
+                <button onclick="checkAnswer(2)" class="py-3 bg-gray-100 hover:bg-brand-orange hover:text-white font-bold rounded-xl transition-all">2</button>
+                <button onclick="checkAnswer(4)" class="py-3 bg-gray-100 hover:bg-brand-green hover:text-white font-bold rounded-xl transition-all text-lg">4</button>
+                <button onclick="checkAnswer(6)" class="py-3 bg-gray-100 hover:bg-brand-orange hover:text-white font-bold rounded-xl transition-all">6</button>
+            </div>
+            
+            <p id="errorMsg" class="text-red-500 text-xs mt-4 font-semibold hidden">Hoppá, ez nem talált! Próbáld újra!</p>
+            
+            <button onclick="closeVerification()" class="mt-6 text-gray-400 hover:text-gray-600 text-xs underline block mx-auto">Mégse</button>
+        </div>
+    </div>
+
+    <!-- Anti-bot JS Logic -->
+    <script>
+        // Base64 encoded Google Form URL to hide it from bots (https://forms.gle/2WBks2U9RQaBYc1R9)
+        const SECURE_PATH = "aHR0cHM6Ly9mb3Jtcy5nbGUvMldCa3MyVTlSUWFCWWMxUjk=";
+
+        function openVerification() {
+            const modal = document.getElementById('captchaModal');
+            document.getElementById('errorMsg').classList.add('hidden');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 50);
+        }
+
+        function closeVerification() {
+            const modal = document.getElementById('captchaModal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function checkAnswer(answer) {
+            if (answer === 4) {
+                // Correct answer: Decode and open the URL
+                const target = atob(SECURE_PATH);
+                window.open(target, '_blank');
+                closeVerification();
+            } else {
+                // Incorrect answer
+                const error = document.getElementById('errorMsg');
+                error.classList.remove('hidden');
+                // Playful shaking effect
+                const modalDiv = document.querySelector('#captchaModal > div');
+                modalDiv.classList.add('translate-x-2');
+                setTimeout(() => modalDiv.classList.remove('translate-x-2'), 100);
+                setTimeout(() => modalDiv.classList.add('-translate-x-2'), 100);
+                setTimeout(() => modalDiv.classList.remove('-translate-x-2'), 200);
+            }
+        }
+    </script>
 </body>
 </html>
